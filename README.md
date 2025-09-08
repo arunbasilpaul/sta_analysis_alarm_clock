@@ -20,7 +20,7 @@ In FPGAs, even if simulation works perfectly, you can fail on hardware if STA is
 - Clock domain crossing failures
 
 ## How?
-The STA that was performed has been explained with the commands used. The commands can also be found in the file titled 'procedure_followed':
+The STA that was performed has been explained with the commands used. The commands can also be found in the file titled 'commands':
 
 # Procedure
 ## 1. Sanity-check constraints
@@ -83,5 +83,5 @@ phys_opt_design -directive AggressiveExplore
 If the path delay is mostly routing, keep related logic close
 create_pblock p_datapath
 add_cells_to_pblock p_datapath [get_cells -hier {source_cell dest_cell}]
-#### PLeasee note that the source and dest cells can be found from the timing summary report
+#### Please note that the source and dest cells can be found from the timing summary report
 resize_pblock p_datapath -add {SLICE_X10Y20 : SLICE_X60Y90}
