@@ -20,4 +20,68 @@ In FPGAs, even if simulation works perfectly, you can fail on hardware if STA is
 - Clock domain crossing failures
 
 ## How?
-The file titled 'procedure_followed' explains the detailed checks that were performed for STA
+The STA that was performed has been explained with the commands used. The commands can also be found in the file titled 'procedure_followed':
+
+# Procedure
+## 1. Sanity-check constraints
+### Define clocks correctly
+Check the clock with various periods:
+create_clock -name clock_name -period [get_ports entity top_module_clock_name];
+
+### Generated clocks (not used in this project)
+create_generated clock -name clock_name -source [get_pins mmcm_inst/CLKOUT 0]\ - divide_by 2 [get_pins bufg_div2/0]
+
+### I/O Timing
+set_input_delay 2.0 -clock entity_clock_name [get_ports entity_data_input_names];
+set_output_delay 2.0 -clock entity_clock_name [get_ports entity_data_output_names];
+
+### Check for unconstrained paths
+report_timing_summary -report_unconstrained
+
+## 2. See what exactly is slow
+open_run impl_1
+report_timing -delay_type max -nworst 5 -max_paths 1
+report_high_fanout_nets -max_nets 10
+report_clock_interaction
+
+## 3. Shorten the logic path (Highest-level fix)
+### A. Pipeline
+Split long combinatorial logic across cycles
+
+### B. Make sure arithmetic uses DSPs/BRAM (Inside your RTL module)
+#### Please note that these commands can be still overwritten by Vivado during optimisation
+attribute use_dsp : string;
+attribute use_dsp of my_signal : signal is "yes";
+
+### C. Reduce logic depth /fan-in
+Decompose giant case/if- trees
+Balance reductions (eg: trees of ladders instead of linear chain)
+
+### D. Tame high-fanout control nets
+set_max_fanout 32 [get_nets en*] 
+#### The above command didn't work in Vivado 2022.2
+phys_opt_design -directive AggressiceFanoutOpt
+
+## 4. Let Vivado help more
+### Synthesis options:
+reset_runs synth_1
+synth_design -top top_module_name -part part_name -retiming -flatten_hierarchy rebuilt
+
+### Implementation options:
+set_property STRATERGY Perfromance_Explore [get_runs impl_1]
+launch_runs impl_1 -to_step route_design
+
+### Placement/Routing directives
+open_run impl_1
+opt_design
+place_design -directive ExtraNetDelay_high
+phys_opt_design -directive AggressiveExplore
+route_design -directive Explore
+phys_opt_design -directive AggressiveExplore
+
+## 5. Floorplan only when needed (when routing dominates)
+If the path delay is mostly routing, keep related logic close
+create_pblock p_datapath
+add_cells_to_pblock p_datapath [get_cells -hier {source_cell dest_cell}]
+#### PLeasee note that the source and dest cells can be found from the timing summary report
+resize_pblock p_datapath -add {SLICE_X10Y20 : SLICE_X60Y90}
