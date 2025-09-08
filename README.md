@@ -18,3 +18,6 @@ In FPGAs, even if simulation works perfectly, you can fail on hardware if STA is
 - Data corruption due to missed setup or hold
 - Unstable operation under temperature/voltage variations
 - Clock domain crossing failures
+
+## How?
+The file titled 'procedure_followed' explains the detailed checks that were performed for STA
