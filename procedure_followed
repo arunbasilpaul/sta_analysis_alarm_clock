@@ -38,3 +38,26 @@ set_max_fanout 32 [get_nets en*]
 #### The above command didn't work in Vivado 2022.2
 phys_opt_design -directive AggressiceFanoutOpt
 
+## 4. Let Vivado help more
+### Synthesis options:
+reset_runs synth_1
+synth_design -top top_module_name -part part_name -retiming -flatten_hierarchy rebuilt
+
+### Implementation options:
+set_property STRATERGY Perfromance_Explore [get_runs impl_1]
+launch_runs impl_1 -to_step route_design
+
+### Placement/Routing directives
+open_run impl_1
+opt_design
+place_design -directive ExtraNetDelay_high
+phys_opt_design -directive AggressiveExplore
+route_design -directive Explore
+phys_opt_design -directive AggressiveExplore
+
+## 5. Floorplan only when needed (when routing dominates)
+If the path delay is mostly routing, keep related logic close
+create_pblock p_datapath
+add_cells_to_pblock p_datapath [get_cells -hier {source_cell dest_cell}]
+#### PLeasee note that the source and dest cells can be found from the timing summary report
+resize_pblock p_datapath -add {SLICE_X10Y20 : SLICE_X60Y90}
