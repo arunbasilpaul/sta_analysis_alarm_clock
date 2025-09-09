@@ -4,7 +4,7 @@
   <img align="center" width="100%" src="https://github.com/user-attachments/assets/7ccbb784-0812-4596-bfdd-ba55eb2c6d28"/>
 
 ## Aim
-The aim of this project is to conduct an Static Timing Analysis on an earlier project 'Alarm Clock'. Strict constraints will be used to push the system to its limits, with analysis and optimisations being conducted at various levels.
+The aim of this project is to conduct a Static Timing Analysis on an earlier project 'Alarm Clock'. Strict constraints will be used to push the system to its limits, with analysis and optimisations being conducted at various levels.
 
 ## What is STA?
 Static Timing Analysis (STA) is a method to verify that your digital design meets its timing requirements without running functional simulations. It checks whether all signal paths can transfer data within the required clock period, considering:
@@ -79,6 +79,8 @@ phys_opt_design -directive AggressiveExplore
 route_design -directive Explore
 phys_opt_design -directive AggressiveExplore
 
+## Conclusion
+The timing report noted a significant change in the timings in the pblock stage; however, the constraints were too stringent and had to be relaxed for proper functioning of the application.
 ## 5. Floorplan only when needed (when routing dominates)
 If the path delay is mostly routing, keep related logic close
 create_pblock p_datapath
